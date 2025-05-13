@@ -10,7 +10,7 @@
 #include <tlhelp32.h>
 
 HMODULE GetRemoteModuleHandle(DWORD pid, const char *dll) {
-	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
 	if (snapshot == INVALID_HANDLE_VALUE) {
 		fprintf(stderr, "[Error] Failed to get process list!\n");
 		return NULL;
@@ -19,12 +19,13 @@ HMODULE GetRemoteModuleHandle(DWORD pid, const char *dll) {
 	MODULEENTRY32 me = {sizeof(me)};
 	Module32First(snapshot, &me);
 	do {
+		fprintf(stdout, "PID %5d | %s | %s\n", pid, me.szExePath, me.szModule);
 		if (_stricmp(me.szModule, dll) == 0) {
 			CloseHandle(snapshot);
 			return me.hModule;
 		}
 	} while (Module32Next(snapshot, &me));
-	
+
 	CloseHandle(snapshot);
 	return NULL;
 }
