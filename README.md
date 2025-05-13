@@ -28,12 +28,12 @@ cd wcheat
 cmake --build .
 ```
 
-### Examples
+### Example: Hooking `CPythonChat::AppendWhisper`
 
-Here is a quick example from the test directory working on 5/2025 for the metin2 client implementation of the Raventor_V2 server.
+This is a real-world example from the 'example' directory, verified as working as of May 2025, using the Raventor_V2 Metin2 client implementation.
 
 ```cpp
-void *vCPythonChat_AppendWhisper = NULL;
+void *vCPythonChat_AppendWhisperOriginal = NULL;
 
 WCHEAT_EXPORT BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID unused) {
   switch (reason) {
@@ -44,12 +44,14 @@ WCHEAT_EXPORT BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID unused
       /**
        * This hooks the function 'CPythonChat::AppendWhisper' from the metin2client.exe executable, from the Raventor_V2 implementation.
        */
-      vCPythonChat_AppendWhisper = NewDetourThis("55 8b ec 83 ec 30 a1 ?? ?? ?? ?? 33 c5 89 45 fc 8b c1 c7 45 f4",
-      (std::function<void (void *, int, const char *, const char *)>)[](void *me, int iType, const char *c_szName, const char *c_szChat) -> void {
-        auto fn = reinterpret_cast<void(__thiscall *)(void *me, int, const char *, const char *)>(vCPythonChat_AppendWhisper);
-        fprintf(stdout, "[Chat] PTR %p NAME %s MSG %s\n", me, c_szName, c_szChat);
-        fn(me, iType, c_szName, c_szChat);
-      });
+      vCPythonChat_AppendWhisperOriginal = NewDetourThis(
+        "55 8b ec 83 ec 30 a1 ?? ?? ?? ?? 33 c5 89 45 fc 8b c1 c7 45 f4",
+        (std::function<void (void *, int, const char *, const char *)>)[](void *me, int iType, const char *c_szName, const char *c_szChat) -> void {
+          auto fn = reinterpret_cast<void(__thiscall *)(void *me, int, const char *, const char *)>(vCPythonChat_AppendWhisperOriginal);
+          fprintf(stdout, "[Chat] PTR %p NAME %s MSG %s\n", me, c_szName, c_szChat);
+          fn(me, iType, c_szName, c_szChat);
+        }
+      );
     } break;
     case DLL_PROCESS_DETACH: {
       OnProcessDetach(hModule, unused);
@@ -57,6 +59,29 @@ WCHEAT_EXPORT BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID unused
   }
   return TRUE;
 }
+```
+
+### DLL Injection and Ejection Utilities
+
+This repository includes two utilities:
+
+1. `load` - Injects a DLL via remote thread
+2. `free` - Ejects a DLL from remote process
+
+NOTE: These require administrator privileges to function properly.
+
+### Injecting a DLL:
+
+Since injecting a DLL is executed from the current working directory of the remote thread use absolute paths.
+```
+load metin2client.exe /absolute/path/to/your.dll
+```
+
+### Unloading a DLL:
+
+When unloading a DLL the name of the DLL is matched so do not include the path.
+```
+free metin2client.exe your.dll
 ```
 
 # Authors
