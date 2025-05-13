@@ -97,7 +97,7 @@ template<typename Ret, typename... Args> void* NewDetourThisEx(void* pLocation, 
 	return DoDetour(pLocation, (void*)DetourThisCallThunk<__COUNTER__, Ret, Args...>::Create(std::make_shared< std::function<Ret(Args...)>>(std::move(lambda))));
 }
 
-template<typename Ret, typename... Args> void *NewDetour(const char *pattern, std::function<Ret(Args...)> lambda) {
+template<typename Lambda> void *NewDetour(const char *pattern, Lambda &&lambda) {
 	void *pLocation = NULL;
 	
 	MODULEINFO info;
@@ -107,10 +107,10 @@ template<typename Ret, typename... Args> void *NewDetour(const char *pattern, st
 		}
 	}
 	
-	return NewDetourEx(pLocation, lambda);
+	return NewDetourThisEx(pLocation, std::function(std::forward<Lambda>(lambda)));
 }
 
-template<typename Ret, typename... Args> void* NewDetourFast(const char* pattern, std::function<Ret(Args...)> lambda) {
+template<typename Lambda> void *NewDetourFast(const char *pattern, Lambda &&lambda) {
 	void* pLocation = NULL;
 
 	MODULEINFO info;
@@ -120,10 +120,10 @@ template<typename Ret, typename... Args> void* NewDetourFast(const char* pattern
 		}
 	}
 
-	return NewDetourFastEx(pLocation, lambda);
+	return NewDetourThisEx(pLocation, std::function(std::forward<Lambda>(lambda)));
 }
 
-template<typename Ret, typename... Args> void* NewDetourThis(const char* pattern, std::function<Ret(Args...)> lambda) {
+template<typename Lambda> void *NewDetourThis(const char *pattern, Lambda &&lambda) {
 	void* pLocation = NULL;
 
 	MODULEINFO info;
@@ -133,7 +133,7 @@ template<typename Ret, typename... Args> void* NewDetourThis(const char* pattern
 		}
 	}
 
-	return NewDetourThisEx(pLocation, lambda);
+	return NewDetourThisEx(pLocation, std::function(std::forward<Lambda>(lambda)));
 }
 
 #endif
