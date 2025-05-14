@@ -46,6 +46,14 @@ HMODULE GetRemoteModuleHandle(DWORD pid, const char *dll) {
 	return NULL;
 }
 
+void ShowConsoleCursor(BOOL bShow) {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO info;
+	info.dwSize = 100;
+	info.bVisible = bShow;
+	SetConsoleCursorInfo(hConsole, &info);
+}
+
 void GotoXY(short x, short y) {
 	COORD dwCoord = {x, y};
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), dwCoord);
@@ -103,7 +111,7 @@ void Inject(DWORD pid) {
 				break;
 			}
 			DWORD dwResult = 0;
-			while (dwResult = WaitForSingleObject(hThread, 16)) {
+			while ((dwResult = WaitForSingleObject(hThread, 0))) {
 				char szBuffer[1024];
 				if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
 					mLogs.push_back(szBuffer);
@@ -143,7 +151,7 @@ void Eject(DWORD pid) {
 			break;
 		}
 		DWORD dwResult = 0;
-		while (dwResult = WaitForSingleObject(hThread, 16)) {
+		while ((dwResult = WaitForSingleObject(hThread, 0))) {
 			char szBuffer[1024];
 			if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
 				mLogs.push_back(szBuffer);
@@ -186,16 +194,18 @@ int main(int argc, char **argv) {
 	MEM_use_guarded_allocator();
 #endif
 
+	ShowConsoleCursor(FALSE);
 	SetConsoleOutputCP(1253);
 	LogSpawn();
 
 	std::vector<DWORD> view;
+	
+	for (uintptr_t line = 0; line < 32; line++) {
+		ClearConsoleLine(line);
+	}
 
 	ptrdiff_t selected = 0;
 	while (true) {
-		GotoXY(0, 0);
-		fprintf(stdout, "[VIEW]\n");
-
 		uintptr_t line;
 
 		view.clear();
@@ -203,12 +213,9 @@ int main(int argc, char **argv) {
 			view.push_back(pid);
 		});
 
-		char szBuffer[1024];
-		if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
-			mLogs.push_back(szBuffer);
-		}
-
-		line = 1;
+		GotoXY(0, 0);
+		ClearConsoleLine((line = 0)++);
+		fprintf(stdout, "[VIEW]\n");
 		
 		for (ptrdiff_t index = WCHEAT_MAX(0, selected - 3); index < selected + 3; ++index) {
 			ClearConsoleLine(line++);
@@ -219,11 +226,12 @@ int main(int argc, char **argv) {
 		}
 
 		GotoXY(0, 8);
+		ClearConsoleLine((line = 8)++);
 		fprintf(stdout, "[LOGS]\n");
 
 		line = 9;
 
-		for (ptrdiff_t index = WCHEAT_MAX(0, ((ptrdiff_t)(mLogs.size()) - 16)); index < mLogs.size(); ++index) {
+		for (ptrdiff_t index = WCHEAT_MAX(0, ((ptrdiff_t)(mLogs.size()) - 24)); index < mLogs.size(); ++index) {
 			ClearConsoleLine(line++);
 			fprintf(stdout, "%5zd | %s\n", index, &mLogs[index][0]);
 		}
@@ -256,6 +264,11 @@ int main(int argc, char **argv) {
 					return 0;
 				} break;
 			}
+		}
+
+		char szBuffer[1024];
+		if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
+			mLogs.push_back(szBuffer);
 		}
 	}
 
