@@ -18,7 +18,7 @@ typedef struct {
 	BOOL bConnected;
 } PIPEINST, *LPPIPEINST; 
 
-PIPEINST Pipe[INSTANCES + 1];
+PIPEINST Pipe[INSTANCES];
 HANDLE Event[INSTANCES]; 
 
 void LogSpawn() {
@@ -72,7 +72,7 @@ bool LogPoll(char *szText, size_t dwMaxLength) {
 		}
 
 		if (Pipe[i].bConnected) {
-			char buffer[4096] = {0};
+			char buffer[1024] = {0};
 			ZeroMemory(&Pipe[i].oOverlap, sizeof(OVERLAPPED));
 			Pipe[i].oOverlap.hEvent = Event[i];
 
@@ -112,29 +112,27 @@ bool LogPoll(char *szText, size_t dwMaxLength) {
 	return false;
 }
 
-void LogConnect() {
-	Pipe[INSTANCES].hPipeInst = CreateFile("\\\\.\\pipe\\mwin32.pipe", GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+HANDLE LogConnect() {
+	return CreateFile("\\\\.\\pipe\\mwin32.pipe", GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 }
-void LogDisconnect() {
-	if (Pipe[INSTANCES].hPipeInst != INVALID_HANDLE_VALUE) {
-		CloseHandle(Pipe[INSTANCES].hPipeInst);
-		Pipe[INSTANCES].hPipeInst = INVALID_HANDLE_VALUE;
+void LogDisconnect(HANDLE hPipe) {
+	if (hPipe != INVALID_HANDLE_VALUE) {
+		CloseHandle(hPipe);
 	}
 }
 
 void Log(const char *msg) {
-	LogConnect();
-	if (Pipe[INSTANCES].hPipeInst != INVALID_HANDLE_VALUE) {
+	HANDLE hPipe = LogConnect();
+	if (hPipe != INVALID_HANDLE_VALUE) {
 		char szPid[16];
 		LIB_strnformat(szPid, ARRAY_SIZE(szPid), "[%5d] ", GetCurrentProcessId());
 
 		DWORD dwLength = 0;
-		WriteFile(Pipe[INSTANCES].hPipeInst, szPid, (DWORD)strlen(szPid), &dwLength, NULL);
-		if (WriteFile(Pipe[INSTANCES].hPipeInst, msg, (DWORD)strlen(msg), &dwLength, NULL)) {
-			FlushFileBuffers(Pipe[INSTANCES].hPipeInst);
-		}
+		WriteFile(hPipe, szPid, (DWORD)strlen(szPid), &dwLength, NULL);
+		WriteFile(hPipe, msg, (DWORD)strlen(msg), &dwLength, NULL);
+		FlushFileBuffers(hPipe);
+		LogDisconnect(hPipe);
 	}
-	LogDisconnect();
 }
 
 void Logf(ATTR_PRINTF_FORMAT const char *msg, ...) {
