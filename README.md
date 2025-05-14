@@ -81,8 +81,3 @@ When unloading a DLL the name of the DLL is matched so do not include the path.
 ```
 free metin2client.exe your.dll
 ```
-
-# Authors
-
-Dimitris Bokis,
-undergraduate student at Aristotle University of Thessaloniki
