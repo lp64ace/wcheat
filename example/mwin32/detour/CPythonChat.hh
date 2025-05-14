@@ -1,0 +1,37 @@
+#ifndef CPYTHON_CHAT_HH
+#define CPYTHON_CHAT_HH
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* -------------------------------------------------------------------- */
+/** \name Detours
+ * \{ */
+
+typedef struct CPythonChat CPythonChat;
+
+typedef void (__thiscall *fnCPythonChat_AppendWhisper)(void *me, int iType, const char *c_szName, const char *c_szChat);
+extern fnCPythonChat_AppendWhisper CPythonChat_AppendWhisper;
+
+/** \} */
+
+/* -------------------------------------------------------------------- */
+/** \name Offsets
+ * \{ */
+
+/** \} */
+
+/* -------------------------------------------------------------------- */
+/** \name Util
+ * \{ */
+
+void CPythonChat_Detour();
+
+/** \} */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // CPYTHON_CHAT_HH
