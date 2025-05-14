@@ -85,55 +85,42 @@ std::shared_ptr<std::function<Ret(Args...)>> DetourThisCallThunk<Id, Ret, Args..
 
 void* DoDetour(void* pLocation, void* pDetour);
 
-template<typename Ret, typename... Args> void *NewDetourEx(void *pLocation, std::function<Ret(Args...)> lambda) {
+template<typename Ret, typename... Args> void *NewDetourCDeclEx(void *pLocation, std::function<Ret(Args...)> lambda) {
 	return DoDetour(pLocation, (void*)DetourCDeclThunk<__COUNTER__, Ret, Args...>::Create(std::make_shared< std::function<Ret(Args...)>>(std::move(lambda))));
 }
 
-template<typename Ret, typename... Args> void* NewDetourFastEx(void* pLocation, std::function<Ret(Args...)> lambda) {
+template<typename Ret, typename... Args> void* NewDetourFastCallEx(void* pLocation, std::function<Ret(Args...)> lambda) {
 	return DoDetour(pLocation, (void*)DetourFastCallThunk<__COUNTER__, Ret, Args...>::Create(std::make_shared< std::function<Ret(Args...)>>(std::move(lambda))));
 }
 
-template<typename Ret, typename... Args> void* NewDetourThisEx(void* pLocation, std::function<Ret(Args...)> lambda) {
+template<typename Ret, typename... Args> void* NewDetourThisCallEx(void* pLocation, std::function<Ret(Args...)> lambda) {
 	return DoDetour(pLocation, (void*)DetourThisCallThunk<__COUNTER__, Ret, Args...>::Create(std::make_shared< std::function<Ret(Args...)>>(std::move(lambda))));
 }
 
-template<typename Lambda> void *NewDetour(const char *pattern, Lambda &&lambda) {
-	void *pLocation = NULL;
-	
-	MODULEINFO info;
-	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &info, sizeof(MODULEINFO))) {
-		if (!(pLocation = (void *)LIB_pattern_offset(GetModuleHandle(NULL), info.SizeOfImage, pattern))) {
-			return NULL;
-		}
+template<typename Lambda> void *NewDetourCDecl(const char *pattern, Lambda &&lambda) {
+	void* pLocation = NewDetour(pattern);
+	if (pLocation) {
+		return NewDetourCDeclEx(pLocation, std::function(std::forward<Lambda>(lambda)));
 	}
-	
-	return NewDetourThisEx(pLocation, std::function(std::forward<Lambda>(lambda)));
+	return NULL;
 }
 
-template<typename Lambda> void *NewDetourFast(const char *pattern, Lambda &&lambda) {
-	void* pLocation = NULL;
-
-	MODULEINFO info;
-	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &info, sizeof(MODULEINFO))) {
-		if (!(pLocation = (void*)LIB_pattern_offset(GetModuleHandle(NULL), info.SizeOfImage, pattern))) {
-			return NULL;
-		}
+template<typename Lambda> void *NewDetourFastCall(const char *pattern, Lambda &&lambda) {
+	void* pLocation = NewDetour(pattern);
+	if (pLocation) {
+		return NewDetourFastCallEx(pLocation, std::function(std::forward<Lambda>(lambda)));
 	}
-
-	return NewDetourThisEx(pLocation, std::function(std::forward<Lambda>(lambda)));
+	return NULL;
 }
 
-template<typename Lambda> void *NewDetourThis(const char *pattern, Lambda &&lambda) {
-	void* pLocation = NULL;
-
-	MODULEINFO info;
-	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &info, sizeof(MODULEINFO))) {
-		if (!(pLocation = (void*)LIB_pattern_offset(GetModuleHandle(NULL), info.SizeOfImage, pattern))) {
-			return NULL;
-		}
+template<typename Lambda> void *NewDetourThisCall(const char *pattern, Lambda &&lambda) {
+	void* pLocation = NewDetour(pattern);
+	if (pLocation) {
+		return NewDetourThisCallEx(pLocation, std::function(std::forward<Lambda>(lambda)));
 	}
-
-	return NewDetourThisEx(pLocation, std::function(std::forward<Lambda>(lambda)));
+	return NULL;
 }
+
+void *NewDetour(const char *pattern);
 
 #endif

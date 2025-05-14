@@ -10,7 +10,7 @@ int __cdecl Trivial_CdeclFunction1(int a, int b) {
 }
 
 TEST(Detours, CDeclAttach1) {
-	void* vTrivial_CdeclFunction = NewDetourEx((void*)&Trivial_CdeclFunction1, (std::function<int (int ,int)>)[&](int a, int b) -> int {
+	void* vTrivial_CdeclFunction = NewDetourCDeclEx((void*)&Trivial_CdeclFunction1, (std::function<int (int ,int)>)[&](int a, int b) -> int {
 		auto fn = reinterpret_cast<int(*__cdecl)(int, int)>(vTrivial_CdeclFunction);
 		EXPECT_EQ(a, 10);
 		EXPECT_EQ(b, 20);
@@ -28,7 +28,7 @@ int __cdecl Trivial_CdeclFunction2(int a, int b) {
 }
 
 TEST(Detours, CDeclAttach2) {
-	void* vTrivial_CdeclFunction = NewDetourEx((void*)&Trivial_CdeclFunction2, (std::function<int(int, int)>)[&](int a, int b) -> int {
+	void* vTrivial_CdeclFunction = NewDetourCDeclEx((void*)&Trivial_CdeclFunction2, (std::function<int(int, int)>)[&](int a, int b) -> int {
 		auto fn = reinterpret_cast<int(*__cdecl)(int, int)>(vTrivial_CdeclFunction);
 		EXPECT_EQ(a, 10);
 		EXPECT_EQ(b, 20);

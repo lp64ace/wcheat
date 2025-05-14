@@ -34,3 +34,16 @@ void* DoDetour(void* pLocation, void* pDetour) {
 	m_Mutex.unlock();
 	return pLocation;
 }
+
+void *NewDetour(const char *pattern) {
+	void* pLocation = NULL;
+
+	MODULEINFO info;
+	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &info, sizeof(MODULEINFO))) {
+		if (!(pLocation = (void*)LIB_pattern_offset(GetModuleHandle(NULL), info.SizeOfImage, pattern))) {
+			return NULL;
+		}
+	}
+	
+	return pLocation;
+}
