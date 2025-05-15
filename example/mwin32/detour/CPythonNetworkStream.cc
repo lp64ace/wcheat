@@ -34,7 +34,7 @@ fnCPythonNetworkStream_GetAccountCharacterSlotDatau CPythonNetworkStream_GetAcco
 
 fnCPythonNetworkStream___RefreshInventoryWindow CPythonNetworkStream___RefreshInventoryWindow = NULL;
 
-BOOL bExpectScriptPacket = TRUE;
+BOOL bExpectScriptPacket = FALSE;
 
 void __fastcall mCPythonNetworkStream___RefreshInventoryWindow(CPythonNetworkStream *me, void *EDX) {
 	if (!bExpectScriptPacket && CPythonNetworkStream_SendScriptButtonPacket(me, 2147483700)) {
@@ -43,13 +43,19 @@ void __fastcall mCPythonNetworkStream___RefreshInventoryWindow(CPythonNetworkStr
 	return CPythonNetworkStream___RefreshInventoryWindow(me);
 }
 
-bool mCPythonNetworkStream_RecvScriptPacketDo(void *me, int iSize, int iAnswer) {
+WCHEAT_INLINE bool mCPythonNetworkStream_RecvScriptPacketDo(void *me, int iSize, int iAnswer) {
 	if (bExpectScriptPacket) {
-		char *szPacket = (char *)MEM_mallocN(iSize, "RecvScriptPacketDo::Packet");
+		char *szPacket = (char *)MEM_mallocN(iSize, "RecvScriptPacket::Override::Packet");
 		CNetworkStream_Recv(me, iSize, szPacket);
 		bExpectScriptPacket &= (iAnswer != 254);
 		MEM_freeN(szPacket);
 		return CPythonNetworkStream_SendScriptAnswerPacket(me, iAnswer);
+	}
+	CPythonNetworkStream *nkNetStream = CPythonNetworkStream_Instance();
+	if (nkNetStream) {
+		uint32_t uSlot = *CPythonNetworkStream_mSelectedCharacterIndex(nkNetStream);
+		uint32_t uLevel = CPythonNetworkStream_GetAccountCharacterSlotDatau(nkNetStream, uSlot, ACCOUNT_CHARACTER_SLOT_LEVEL);
+		Logf("%u:%s[Lv %u] Packet::NotHandled", uSlot, CPythonNetworkStream_GetAccountCharacterSlotDataz(nkNetStream, uSlot, ACCOUNT_CHARACTER_SLOT_NAME), uLevel);
 	}
 	return CPythonNetworkStream_RecvScriptPacket(me);
 }
@@ -72,7 +78,7 @@ bool __fastcall mCPythonNetworkStream_RecvScriptPacket(void *me, void *EDX) {
 				return mCPythonNetworkStream_RecvScriptPacketDo(me, *(unsigned short *)POINTER_OFFSET(szBuffer, 0x1), 254);
 		}
 		if (bExpectScriptPacket) {
-			Logf("CPythonNetworkStream_RecvScriptPacket(%xu: [Size: %d Skin: %d])", uHash, (int)*(unsigned short *)POINTER_OFFSET(szBuffer, 0x1), *(unsigned short *)POINTER_OFFSET(szBuffer, 0x3));
+			Logf("RecvScriptPacket(%xu: [Size: %d Skin: %d])", uHash, (int)*(unsigned short *)POINTER_OFFSET(szBuffer, 0x1), *(unsigned short *)POINTER_OFFSET(szBuffer, 0x3));
 			bExpectScriptPacket &= FALSE;
 		}
 	}

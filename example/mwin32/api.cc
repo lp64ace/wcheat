@@ -240,6 +240,8 @@ int main(int argc, char **argv) {
 			fprintf(stdout, "%5zd | %s\n", index, &mLogs[index][0]);
 		}
 
+		Sleep(16);
+
 		if (kbhit()) {
 			switch (getch()) {
 				case 32: {	// SPACE
@@ -269,7 +271,7 @@ int main(int argc, char **argv) {
 		}
 
 		char *szBuffer = (char *)MEM_mallocN(0xffffu, "Log::Buffer");
-		if (LogPoll(szBuffer, 0xffffu)) {
+		while (LogPoll(szBuffer, 0xffffu)) {
 			mLogs.push_back(szBuffer);
 		}
 		MEM_freeN(szBuffer);
