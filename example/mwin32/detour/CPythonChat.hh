@@ -26,7 +26,8 @@ extern fnCPythonChat_AppendWhisper CPythonChat_AppendWhisper;
 /** \name Util
  * \{ */
 
-void CPythonChat_Detour();
+void CPythonChat_Attach(void *pLocation, size_t dwLength);
+void CPythonChat_Detach();
 
 /** \} */
 

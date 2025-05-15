@@ -72,18 +72,16 @@ bool LogPoll(char *szText, size_t dwMaxLength) {
 		}
 
 		if (Pipe[i].bConnected) {
-			char buffer[1024] = {0};
 			ZeroMemory(&Pipe[i].oOverlap, sizeof(OVERLAPPED));
 			Pipe[i].oOverlap.hEvent = Event[i];
 
-			fSuccess = ReadFile(Pipe[i].hPipeInst, buffer, sizeof(buffer) - 1, &dwBytesRead, &Pipe[i].oOverlap);
+			fSuccess = ReadFile(Pipe[i].hPipeInst, szText, dwMaxLength, &dwBytesRead, &Pipe[i].oOverlap);
 
 			if (!fSuccess && GetLastError() == ERROR_IO_PENDING) {
 				DWORD dwRes = WaitForSingleObject(Event[i], 0);
 				if (dwRes == WAIT_OBJECT_0) {
 					GetOverlappedResult(Pipe[i].hPipeInst, &Pipe[i].oOverlap, &dwBytesRead, FALSE);
 					if (dwBytesRead > 0) {
-						strncpy(szText, buffer, min(dwMaxLength, (size_t)dwBytesRead));
 						szText[min(dwMaxLength - 1, (size_t)dwBytesRead)] = '\0';
 						ResetEvent(Event[i]);
 						return true;
@@ -91,7 +89,6 @@ bool LogPoll(char *szText, size_t dwMaxLength) {
 				}
 			}
 			else if (fSuccess && dwBytesRead > 0) {
-				strncpy(szText, buffer, min(dwMaxLength, (size_t)dwBytesRead));
 				szText[min(dwMaxLength - 1, (size_t)dwBytesRead)] = '\0';
 				return true;
 			}
@@ -125,10 +122,8 @@ void Log(const char *msg) {
 	HANDLE hPipe = LogConnect();
 	if (hPipe != INVALID_HANDLE_VALUE) {
 		char szPid[16];
-		LIB_strnformat(szPid, ARRAY_SIZE(szPid), "[%5d] ", GetCurrentProcessId());
 
 		DWORD dwLength = 0;
-		WriteFile(hPipe, szPid, (DWORD)strlen(szPid), &dwLength, NULL);
 		WriteFile(hPipe, msg, (DWORD)strlen(msg), &dwLength, NULL);
 		FlushFileBuffers(hPipe);
 		LogDisconnect(hPipe);
@@ -136,11 +131,11 @@ void Log(const char *msg) {
 }
 
 void Logf(ATTR_PRINTF_FORMAT const char *msg, ...) {
-	char *szBuffer = MEM_mallocN(1024, "Log");
+	char *szBuffer = MEM_mallocN(0xffffu, "Log");
 
 	va_list args;
 	va_start(args, msg);
-	(void)LIB_vstrnformat(szBuffer, 1024, msg, args);
+	(void)LIB_vstrnformat(szBuffer, 0xffffu, msg, args);
 	Log(szBuffer);
 	va_end(args);
 

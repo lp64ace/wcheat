@@ -37,13 +37,39 @@ enum {
 typedef struct CPythonNetworkStream CPythonNetworkStream;
 
 typedef bool(__thiscall *fnCPythonNetworkStream_RecvWhisperPacket)(void *me);
-extern fnCPythonNetworkStream_RecvWhisperPacket CPythonNetworkStream_RecvWhisperPacket;
 typedef bool(__thiscall *fnCPythonNetworkStream_SendWhisperPacket)(void *me, const char *name, const char *c_szChat);
+extern fnCPythonNetworkStream_RecvWhisperPacket CPythonNetworkStream_RecvWhisperPacket;
 extern fnCPythonNetworkStream_SendWhisperPacket CPythonNetworkStream_SendWhisperPacket;
+
+typedef bool(__thiscall *fnCPythonNetworkStream_CheckPacket)(void *me, BYTE *bHeader);
+extern fnCPythonNetworkStream_CheckPacket CPythonNetworkStream_CheckPacket;
+
 typedef const char *(__thiscall *fnCPythonNetworkStream_GetAccountCharacterSlotDataz)(void *me, unsigned int iSlot, unsigned int eType);
+typedef unsigned int(__thiscall *fnCPythonNetworkStream_GetAccountCharacterSlotDatau)(void *me, unsigned int iSlot, unsigned int eType);
 extern fnCPythonNetworkStream_GetAccountCharacterSlotDataz CPythonNetworkStream_GetAccountCharacterSlotDataz;
-typedef unsigned int (__thiscall *fnCPythonNetworkStream_GetAccountCharacterSlotDatau)(void *me, unsigned int iSlot, unsigned int eType);
 extern fnCPythonNetworkStream_GetAccountCharacterSlotDatau CPythonNetworkStream_GetAccountCharacterSlotDatau;
+
+typedef bool(__thiscall *fnCPythonNetworkStream_SendScriptAnswerPacket)(void *me, int iAnswer);
+typedef bool(__thiscall *fnCPythonNetworkStream_SendScriptButtonPacket)(void *me, unsigned int uIndex);
+typedef bool(__thiscall *fnCPythonNetworkStream_SendQuestInputStringPacket)(void *me, const char *c_szString);
+typedef bool(__thiscall *fnCPythonNetworkStream_SendQuestConfirmPacket)(void *me, unsigned char bAnswer, unsigned int uPID);
+extern fnCPythonNetworkStream_SendScriptAnswerPacket CPythonNetworkStream_SendScriptAnswerPacket;
+extern fnCPythonNetworkStream_SendScriptButtonPacket CPythonNetworkStream_SendScriptButtonPacket;
+extern fnCPythonNetworkStream_SendQuestInputStringPacket CPythonNetworkStream_SendQuestInputStringPacket;
+extern fnCPythonNetworkStream_SendQuestConfirmPacket CPythonNetworkStream_SendQuestConfirmPacket;
+
+typedef void(__thiscall *fnCPythonNetworkStream_OnScriptEventStart)(void *me, int iSkin, int iIndex);
+extern fnCPythonNetworkStream_OnScriptEventStart CPythonNetworkStream_OnScriptEventStart;
+
+typedef bool(__thiscall *fnCPythonNetworkStream_RecvScriptPacket)(void *me);
+typedef bool(__thiscall *fnCPythonNetworkStream_RecvQuestInfoPacket)(void *me);
+typedef void(__thiscall *fnCPythonNetworkStream_RecvQuestConfirmPacket)(void *me);
+extern fnCPythonNetworkStream_RecvScriptPacket CPythonNetworkStream_RecvScriptPacket;
+extern fnCPythonNetworkStream_RecvQuestInfoPacket CPythonNetworkStream_RecvQuestInfoPacket;
+extern fnCPythonNetworkStream_RecvQuestConfirmPacket CPythonNetworkStream_RecvQuestConfirmPacket;
+
+typedef void(__thiscall *fnCPythonNetworkStream___RefreshInventoryWindow)(void *me);
+extern fnCPythonNetworkStream___RefreshInventoryWindow CPythonNetworkStream___RefreshInventoryWindow;
 
 /** \} */
 
@@ -64,7 +90,8 @@ uint32_t *CPythonNetworkStream_mSelectedCharacterIndex(CPythonNetworkStream *me)
 /** \name Util
  * \{ */
 
-void CPythonNetworkStream_Detour();
+void CPythonNetworkStream_Attach(void *pLocation, size_t dwLength);
+void CPythonNetworkStream_Detach();
 
 /** \} */
 

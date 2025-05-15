@@ -25,11 +25,17 @@ set(SRC
 	
 	intern/Log.c
 	intern/Log.h
-	
+
+	detour/CNetStream.cc
+	detour/CNetStream.hh
 	detour/CPythonChat.cc
 	detour/CPythonChat.hh
+	detour/CPythonEventManager.cc
+	detour/CPythonEventManager.hh
 	detour/CPythonNetworkStream.cc
 	detour/CPythonNetworkStream.hh
+	detour/IAbstractPlayer.cc
+	detour/IAbstractPlayer.hh
 )
 
 # -----------------------------------------------------------------------------

@@ -1,6 +1,4 @@
-#ifndef NDEBUG
-#	include "MEM_guardedalloc.h"
-#endif
+#include "MEM_guardedalloc.h"
 
 #include "LIB_string.h"
 #include "LIB_utildefines.h"
@@ -112,7 +110,7 @@ void Inject(DWORD pid) {
 			}
 			DWORD dwResult = 0;
 			while ((dwResult = WaitForSingleObject(hThread, 0))) {
-				char szBuffer[1024];
+				char szBuffer[512];
 				if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
 					mLogs.push_back(szBuffer);
 				}
@@ -152,7 +150,7 @@ void Eject(DWORD pid) {
 		}
 		DWORD dwResult = 0;
 		while ((dwResult = WaitForSingleObject(hThread, 0))) {
-			char szBuffer[1024];
+			char szBuffer[512];
 			if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
 				mLogs.push_back(szBuffer);
 			}
@@ -217,8 +215,11 @@ int main(int argc, char **argv) {
 		ClearConsoleLine((line = 0)++);
 		fprintf(stdout, "[VIEW]\n");
 		
-		for (ptrdiff_t index = WCHEAT_MAX(0, selected - 3); index < selected + 3; ++index) {
+		for (ptrdiff_t index = 0; index < 8; ++index) {
 			ClearConsoleLine(line++);
+		}
+
+		for (ptrdiff_t index = WCHEAT_MAX(0, selected - 4); index < WCHEAT_MIN(view.size(), WCHEAT_MAX(0, selected - 4) + 8); ++index) {
 			if (0 <= index && index < view.size()) {
 				DWORD pid = view[index];
 				fprintf(stdout, "%c[PID %5lu] STATUS [%c]\n", " >"[(index == selected)], pid, " X"[GetRemoteModuleHandle(pid, "mwin32.dll") != NULL]);
@@ -231,12 +232,13 @@ int main(int argc, char **argv) {
 
 		line = 9;
 
-		for (ptrdiff_t index = WCHEAT_MAX(0, ((ptrdiff_t)(mLogs.size()) - 24)); index < mLogs.size(); ++index) {
+		for (ptrdiff_t index = WCHEAT_MAX(0, (ptrdiff_t)mLogs.size() - 8); index < mLogs.size(); ++index) {
 			ClearConsoleLine(line++);
-			fprintf(stdout, "%5zd | %s\n", index, &mLogs[index][0]);
 		}
 
-		Sleep(32);
+		for (ptrdiff_t index = WCHEAT_MAX(0, (ptrdiff_t)mLogs.size() - 8); index < mLogs.size(); ++index) {
+			fprintf(stdout, "%5zd | %s\n", index, &mLogs[index][0]);
+		}
 
 		if (kbhit()) {
 			switch (getch()) {
@@ -266,10 +268,11 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		char szBuffer[1024];
-		if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
+		char *szBuffer = (char *)MEM_mallocN(0xffffu, "Log::Buffer");
+		if (LogPoll(szBuffer, 0xffffu)) {
 			mLogs.push_back(szBuffer);
 		}
+		MEM_freeN(szBuffer);
 	}
 
 	return 0;
