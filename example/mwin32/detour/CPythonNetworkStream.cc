@@ -3,6 +3,7 @@
 #include "LIB_memory.hh"
 #include "LIB_utildefines.h"
 
+#include "intern/Chat.h"
 #include "intern/Log.h"
 
 #include "CNetStream.hh"
@@ -86,6 +87,20 @@ bool __fastcall mCPythonNetworkStream_RecvScriptPacket(void *me, void *EDX) {
 	return CPythonNetworkStream_RecvScriptPacket(me);
 }
 
+bool __fastcall mCPythonNetworkStream_RecvWhisperPacket(void *me, void *EDX) {
+	char szBuffer[0x200];
+	if (!CNetworkStream_Peek(me, 0x1d, szBuffer)) {
+		return CPythonNetworkStream_RecvWhisperPacket(me);
+	}
+	if (!CNetworkStream_Peek(me, *(unsigned short *)POINTER_OFFSET(szBuffer, 0x1), szBuffer)) {
+		return CPythonNetworkStream_RecvWhisperPacket(me);
+	}
+	szBuffer[*(unsigned short *)POINTER_OFFSET(szBuffer, 0x1)] = '\0';
+
+	Chat_PostMessage(me, (const char *)POINTER_OFFSET(szBuffer, 0x4), (const char *)POINTER_OFFSET(szBuffer, 0x1d));
+	return CPythonNetworkStream_RecvWhisperPacket(me);
+}
+
 /** \} */
 
 /* -------------------------------------------------------------------- */
@@ -151,6 +166,7 @@ void CPythonNetworkStream_Attach(void *pLocation, size_t dwLength) {
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach((PVOID *)&CPythonNetworkStream_RecvScriptPacket, mCPythonNetworkStream_RecvScriptPacket);
+	DetourAttach((PVOID *)&CPythonNetworkStream_RecvWhisperPacket, mCPythonNetworkStream_RecvWhisperPacket);
 	DetourAttach((PVOID *)&CPythonNetworkStream___RefreshInventoryWindow, mCPythonNetworkStream___RefreshInventoryWindow);
 	DetourTransactionCommit();
 }
@@ -159,6 +175,7 @@ void CPythonNetworkStream_Detach() {
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourDetach((PVOID *)&CPythonNetworkStream_RecvScriptPacket, mCPythonNetworkStream_RecvScriptPacket);
+	DetourDetach((PVOID *)&CPythonNetworkStream_RecvWhisperPacket, mCPythonNetworkStream_RecvWhisperPacket);
 	DetourDetach((PVOID *)&CPythonNetworkStream___RefreshInventoryWindow, mCPythonNetworkStream___RefreshInventoryWindow);
 	DetourTransactionCommit();
 }

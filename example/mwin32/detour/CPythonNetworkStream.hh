@@ -41,7 +41,7 @@ typedef bool(__thiscall *fnCPythonNetworkStream_SendWhisperPacket)(void *me, con
 extern fnCPythonNetworkStream_RecvWhisperPacket CPythonNetworkStream_RecvWhisperPacket;
 extern fnCPythonNetworkStream_SendWhisperPacket CPythonNetworkStream_SendWhisperPacket;
 
-typedef bool(__thiscall *fnCPythonNetworkStream_CheckPacket)(void *me, BYTE *bHeader);
+typedef bool(__thiscall *fnCPythonNetworkStream_CheckPacket)(void *me, unsigned char *bHeader);
 extern fnCPythonNetworkStream_CheckPacket CPythonNetworkStream_CheckPacket;
 
 typedef const char *(__thiscall *fnCPythonNetworkStream_GetAccountCharacterSlotDataz)(void *me, unsigned int iSlot, unsigned int eType);

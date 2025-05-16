@@ -21,13 +21,23 @@ set(INC_SYS
 # Define Source Files
 
 set(SRC
+	${ENV_C}
+
 	main.cc
 	
+	intern/Chat.cc
+	intern/Chat.h
+	intern/ChatMessage.c
+	intern/ChatMessage.h
+	intern/Http.c
+	intern/Http.h
 	intern/Log.c
 	intern/Log.h
 
 	detour/CNetStream.cc
 	detour/CNetStream.hh
+	detour/CPythonApplication.cc
+	detour/CPythonApplication.hh
 	detour/CPythonChat.cc
 	detour/CPythonChat.hh
 	detour/CPythonEventManager.cc
@@ -36,6 +46,12 @@ set(SRC
 	detour/CPythonNetworkStream.hh
 	detour/IAbstractPlayer.cc
 	detour/IAbstractPlayer.hh
+)
+
+data_to_c(
+	${CMAKE_SOURCE_DIR}/env.txt
+	${CMAKE_BINARY_DIR}/env.c
+	SRC
 )
 
 # -----------------------------------------------------------------------------

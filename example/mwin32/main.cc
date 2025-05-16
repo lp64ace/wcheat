@@ -4,6 +4,7 @@
 #include "intern/Log.h"
 
 #include "detour/CNetStream.hh"
+#include "detour/CPythonApplication.hh"
 #include "detour/CPythonChat.hh"
 #include "detour/CPythonEventManager.hh"
 #include "detour/CPythonNetworkStream.hh"
@@ -14,6 +15,7 @@ WCHEAT_EXPORT BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID unused
 			DisableThreadLibraryCalls(hModule);
 
 			CNetStream_Attach(GetModuleHandle(NULL), DetourGetModuleSize(GetModuleHandle(NULL)));
+			CPythonApplication_Attach(GetModuleHandle(NULL), DetourGetModuleSize(GetModuleHandle(NULL)));
 			CPythonChat_Attach(GetModuleHandle(NULL), DetourGetModuleSize(GetModuleHandle(NULL)));
 			CPythonEventManager_Attach(GetModuleHandle(NULL), DetourGetModuleSize(GetModuleHandle(NULL)));
 			CPythonNetworkStream_Attach(GetModuleHandle(NULL), DetourGetModuleSize(GetModuleHandle(NULL)));
@@ -29,6 +31,7 @@ WCHEAT_EXPORT BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID unused
 			CPythonNetworkStream_Detach();
 			CPythonEventManager_Detach();
 			CPythonChat_Detach();
+			CPythonApplication_Detach();
 			CNetStream_Detach();
 		} break;
 	}

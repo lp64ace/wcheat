@@ -111,7 +111,7 @@ void Inject(DWORD pid) {
 			DWORD dwResult = 0;
 			while ((dwResult = WaitForSingleObject(hThread, 0))) {
 				char szBuffer[512];
-				if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
+				while (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
 					mLogs.push_back(szBuffer);
 				}
 			}
@@ -151,7 +151,7 @@ void Eject(DWORD pid) {
 		DWORD dwResult = 0;
 		while ((dwResult = WaitForSingleObject(hThread, 0))) {
 			char szBuffer[512];
-			if (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
+			while (LogPoll(szBuffer, ARRAY_SIZE(szBuffer))) {
 				mLogs.push_back(szBuffer);
 			}
 		}
@@ -232,11 +232,11 @@ int main(int argc, char **argv) {
 
 		line = 9;
 
-		for (ptrdiff_t index = WCHEAT_MAX(0, (ptrdiff_t)mLogs.size() - 8); index < mLogs.size(); ++index) {
+		for (ptrdiff_t index = WCHEAT_MAX(0, (ptrdiff_t)mLogs.size() - 16); index < mLogs.size(); ++index) {
 			ClearConsoleLine(line++);
 		}
 
-		for (ptrdiff_t index = WCHEAT_MAX(0, (ptrdiff_t)mLogs.size() - 8); index < mLogs.size(); ++index) {
+		for (ptrdiff_t index = WCHEAT_MAX(0, (ptrdiff_t)mLogs.size() - 16); index < mLogs.size(); ++index) {
 			fprintf(stdout, "%5zd | %s\n", index, &mLogs[index][0]);
 		}
 
