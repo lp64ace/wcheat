@@ -92,20 +92,20 @@ int ForEach(std::function<void (DWORD pid)> callback) {
 void Inject(DWORD pid) {
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 	if (!hProcess) {
-		Log("[Error] Failed to get process handle!");
+		mLogs.push_back("[Error] Failed to get process handle!");
 		return;
 	}
 	do {
 		LPVOID lpRemoteMem = VirtualAllocEx(hProcess, NULL, MAX_PATH, MEM_COMMIT, PAGE_READWRITE);
 		if (!lpRemoteMem) {
-			Log("[Error] Failed to allocate process memory!");
+			mLogs.push_back("[Error] Failed to allocate process memory!");
 			return;
 		}
 		WriteProcessMemory(hProcess, lpRemoteMem, szDLL, MAX_PATH, NULL);
 		do {
 			HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryA, lpRemoteMem, 0, NULL);
 			if (!hThread) {
-				Log("[Error] Failed to create remote thread!");
+				mLogs.push_back("[Error] Failed to create remote thread!");
 				break;
 			}
 			DWORD dwResult = 0;
@@ -127,14 +127,14 @@ void Inject(DWORD pid) {
 	CloseHandle(hProcess);
 
 	if (!GetRemoteModuleHandle(pid, "mwin32.dll")) {
-		Log("[Error] Failed to inject DLL! (Unkown)");
+		mLogs.push_back("[Error] Failed to inject DLL! (Unkown)");
 	}
 }
 
 void Eject(DWORD pid) {
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 	if (!hProcess) {
-		Log("[Error] Failed to get process handle!");
+		mLogs.push_back("[Error] Failed to get process handle!");
 		return;
 	}
 	do {
@@ -145,7 +145,7 @@ void Eject(DWORD pid) {
 		}
 		HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)FreeLibrary, hRemoteLibrary, 0, NULL);
 		if (!hThread) {
-			Log("[Error] Failed to create remote thread!");
+			mLogs.push_back("[Error] Failed to create remote thread!");
 			break;
 		}
 		DWORD dwResult = 0;
@@ -157,7 +157,7 @@ void Eject(DWORD pid) {
 		}
 		GetExitCodeThread(hThread, &dwResult);
 		if (!dwResult) {
-			Log("[Error] Failed to unload DLL!");
+			mLogs.push_back("[Error] Failed to unload DLL!");
 			break;
 		}
 		CloseHandle(hThread);
@@ -165,23 +165,29 @@ void Eject(DWORD pid) {
 	CloseHandle(hProcess);
 }
 
-void UpdateDLL() {
-	CHAR szDirectory[MAX_PATH];
-	if (GetCurrentDirectory(MAX_PATH, szDirectory)) {
-		do {
-			HANDLE hFile = CreateFile("mwin32.dll", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-			if (hFile == INVALID_HANDLE_VALUE) {
-				break;
-			}
-			DWORD dwLength = 0;
-			if (!WriteFile(hFile, datatoc_mwin32_dll, datatoc_mwin32_dll_size, &dwLength, NULL)) {
-				CloseHandle(hFile);
-				break;
-			}
-			CloseHandle(hFile);
-		} while (false);
+BOOL bNewDll = FALSE;
 
-		PathCombine(szDLL, szDirectory, "mwin32.dll");
+void UpdateDLL() {
+	if (!bNewDll) {
+		CHAR szDirectory[MAX_PATH];
+		if (GetCurrentDirectory(MAX_PATH, szDirectory)) {
+			do {
+				HANDLE hFile = CreateFile("mwin32.dll", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hFile == INVALID_HANDLE_VALUE) {
+					break;
+				}
+				DWORD dwLength = 0;
+				if (!WriteFile(hFile, datatoc_mwin32_dll, datatoc_mwin32_dll_size, &dwLength, NULL)) {
+					CloseHandle(hFile);
+					break;
+				}
+				mLogs.push_back("[Info] DLL updated to the new version!");
+				bNewDll = TRUE;
+				CloseHandle(hFile);
+			} while (false);
+
+			PathCombine(szDLL, szDirectory, "mwin32.dll");
+		}
 	}
 }
 

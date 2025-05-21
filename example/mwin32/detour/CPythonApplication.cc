@@ -34,7 +34,7 @@ void *CPythonApplication_mChat(CPythonApplication *me) {
 
 void CPythonApplication_Attach(void *pLocation, size_t dwLength) {
 	CPythonApplication_UpdateGame = (fnCPythonApplication_UpdateGame)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 6a ff 68 ?? ?? ?? ?? 64 a1 ?? ?? ?? ?? 50 83 ec 4c a1 ?? ?? ?? ?? 33 c5 89 45 f0 53 56 57 50 8d 45 f4 64 a3 ?? ?? ?? ?? 8b f1 89 75 e0");
-	WCHEAT_assert(CPythonApplication_UpdateGame);
+	ALWAYS_ASSERT(CPythonApplication_UpdateGame);
 	
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());

@@ -38,7 +38,7 @@ fnCPythonNetworkStream___RefreshInventoryWindow CPythonNetworkStream___RefreshIn
 BOOL bExpectScriptPacket = FALSE;
 
 void __fastcall mCPythonNetworkStream___RefreshInventoryWindow(CPythonNetworkStream *me, void *EDX) {
-	if (!bExpectScriptPacket && CPythonNetworkStream_SendScriptButtonPacket(me, 2147483700)) {
+	if (!bExpectScriptPacket && CPythonNetworkStream_SendScriptButtonPacket(me, 2147483701)) {
 		bExpectScriptPacket |= TRUE;
 	}
 	return CPythonNetworkStream___RefreshInventoryWindow(me);
@@ -120,12 +120,17 @@ CPythonNetworkStream *CPythonNetworkStream_Instance() {
 		 * The pattern locates a sequence of bytes in memory, and the resulting address points 
 		 * just after the end of this byte sequence. This address corresponds to a static memory 
 		 * block holding a pointer to a pointer (since it's a reference in C++).
+		 * 
+		 * How to find;
+		 * The function CAccountConnector::...RecvAuthSuccess...() has a string;
+		 * 1. "OnLoginFailure"
+		 * There are two functions there that are called with the CPythonNetworkStream::Instance() as ECX.
 		 */
 		HMODULE hModule = GetModuleHandle(NULL);
-		lpNetStream = (void *)LIB_pattern_offset(hModule, DetourGetModuleSize(hModule), "57 50 e8 07 eb 08 00 8b 3d");
-		WCHEAT_assert(lpNetStream);
+		lpNetStream = (void *)LIB_pattern_offset(hModule, DetourGetModuleSize(hModule), "8b 0d ?? ?? ?? ?? 57 50 e8 ?? ?? ?? ?? 8b 3d");
+		ALWAYS_ASSERT(lpNetStream);
 	}
-	return **(CPythonNetworkStream ***)POINTER_OFFSET(lpNetStream, 9 /**The number of bytes in the pattern */);
+	return **(CPythonNetworkStream ***)POINTER_OFFSET(lpNetStream, 15 /**The number of bytes in the pattern */);
 }
 
 uint32_t *CPythonNetworkStream_mSelectedCharacterIndex(CPythonNetworkStream *me) {
@@ -144,24 +149,24 @@ void CPythonNetworkStream_Attach(void *pLocation, size_t dwLength) {
 	CPythonNetworkStream_SendScriptButtonPacket = (fnCPythonNetworkStream_SendScriptButtonPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 08 8b 45 08 56 89 45 f9 8b f1 8d 45 f8 c6 45 f8 42");
 	CPythonNetworkStream_SendQuestInputStringPacket = (fnCPythonNetworkStream_SendQuestInputStringPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 48 a1 ?? ?? ?? ?? 33 c5 89 45 fc 8b 45 08 56 6a 40");
 	CPythonNetworkStream_SendQuestConfirmPacket = (fnCPythonNetworkStream_SendQuestConfirmPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 08 53 8a 5d 08");
-	CPythonNetworkStream_RecvScriptPacket = (fnCPythonNetworkStream_RecvScriptPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 08 8d 45 f8 56 50 6a 06 8b f1 e8 4c c1 05 00");
+	CPythonNetworkStream_RecvScriptPacket = (fnCPythonNetworkStream_RecvScriptPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 08 8d 45 f8 56 50 6a 06 8b f1 e8 ?? ?? ?? ?? 84 c0 75 14");
 	CPythonNetworkStream_RecvQuestInfoPacket = (fnCPythonNetworkStream_RecvQuestInfoPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 6a ff 68 ?? ?? ?? ?? 64 a1 ?? ?? ?? ?? 50 81 ec 50 01 00 00 a1 ?? ?? ?? ?? 33 c5 89 45 f0 56 57 50 8d 45 f4 64 a3 ?? ?? ?? ?? 8b f9");
-	CPythonNetworkStream_RecvQuestConfirmPacket = (fnCPythonNetworkStream_RecvQuestConfirmPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 50 a1 ?? ?? ?? ?? 33 c5 89 45 fc 56");
+	CPythonNetworkStream_RecvQuestConfirmPacket = (fnCPythonNetworkStream_RecvQuestConfirmPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 83 ec 50 a1 ?? ?? ?? ?? 33 c5 89 45 fc 56 8d 45 b0");
 	CPythonNetworkStream_RecvWhisperPacket = (fnCPythonNetworkStream_RecvWhisperPacket)LIB_pattern_offset(pLocation, dwLength, "55 8b ec 6a ff 68 ?? ?? ?? ?? 64 a1 ?? ?? ?? ?? 50 81 ec 64 02 00 00 a1 ?? ?? ?? ?? 33 c5 89 45 f0 56 57 50 8d 45 f4 64 a3 ?? ?? ?? ?? 8b f9");
 	CPythonNetworkStream___RefreshInventoryWindow = (fnCPythonNetworkStream___RefreshInventoryWindow)LIB_pattern_offset(pLocation, dwLength, "c6 81 a3 03 00 00 01 c3");
-	WCHEAT_assert(CPythonNetworkStream_CheckPacket);
-	WCHEAT_assert(CPythonNetworkStream_GetAccountCharacterSlotDataz);
-	WCHEAT_assert(CPythonNetworkStream_GetAccountCharacterSlotDatau);
-	WCHEAT_assert(CPythonNetworkStream_SendWhisperPacket);
-	WCHEAT_assert(CPythonNetworkStream_SendScriptAnswerPacket);
-	WCHEAT_assert(CPythonNetworkStream_SendScriptButtonPacket);
-	WCHEAT_assert(CPythonNetworkStream_SendQuestInputStringPacket);
-	WCHEAT_assert(CPythonNetworkStream_SendQuestConfirmPacket);
-	WCHEAT_assert(CPythonNetworkStream_RecvScriptPacket);
-	WCHEAT_assert(CPythonNetworkStream_RecvQuestInfoPacket);
-	WCHEAT_assert(CPythonNetworkStream_RecvQuestConfirmPacket);
-	WCHEAT_assert(CPythonNetworkStream_RecvWhisperPacket);
-	WCHEAT_assert(CPythonNetworkStream___RefreshInventoryWindow);
+	ALWAYS_ASSERT(CPythonNetworkStream_CheckPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_GetAccountCharacterSlotDataz);
+	ALWAYS_ASSERT(CPythonNetworkStream_GetAccountCharacterSlotDatau);
+	ALWAYS_ASSERT(CPythonNetworkStream_SendWhisperPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_SendScriptAnswerPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_SendScriptButtonPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_SendQuestInputStringPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_SendQuestConfirmPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_RecvScriptPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_RecvQuestInfoPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_RecvQuestConfirmPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream_RecvWhisperPacket);
+	ALWAYS_ASSERT(CPythonNetworkStream___RefreshInventoryWindow);
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());

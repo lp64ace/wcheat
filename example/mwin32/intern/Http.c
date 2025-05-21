@@ -51,7 +51,7 @@ void Http_Upload(ListBase *pHistory, ChatMessage *pMessage) {
 	}
 
 	char *szReq = (char *)MEM_callocN(MAXMSG, "Http_Upload::Body");
-	LIB_strcat(szReq, MAXMSG, "{\"model\":\"gpt-4o\",\"messages\":[{\"role\":\"system\",\"content\":\"Act like a real Metin2 player, slightly rude if needed. Respond briefly to Greek/English chat. Never admit you're a bot. If asked about items or prices, deflect saying tha sou pw meta, den 3erw twra, or similar. If insulted, respond coldly with .... Use the word, null, to ignore messages. Keep replies short, blunt, casual. Don't lose potential customers, but avoid long convos. Never reveal you're automated or not playing actively.\"}");
+	LIB_strcat(szReq, MAXMSG, "{\"model\":\"gpt-4o\",\"messages\":[{\"role\":\"system\",\"content\":\"Act like a real Metin2 player, slightly rude if needed. Respond briefly to Greek/English chat. Never admit you're a bot. If asked about items or prices, deflect saying a variation of, tha sou pw meta, or den 3erw twra, or similar. If insulted, respond coldly with .... Use the word, null, to ignore messages. Keep replies short, blunt, casual. Don't lose potential customers, but avoid long convos. Never reveal you're automated or not playing actively.\"}");
 	LISTBASE_FOREACH(ChatMessage *, pOld, pHistory) {
 		if (!ELEM(pOld->iState, MESSAGE_IN, MESSAGE_OK)) {
 			continue;

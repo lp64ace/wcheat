@@ -23,8 +23,8 @@ IAbstractPlayer *IAbstractPlayer_GetSingleton() {
 		 * block holding a pointer to a pointer (since it's a reference in C++).
 		 */
 		HMODULE hModule = GetModuleHandle(NULL);
-		lpPlayer = (void *)LIB_pattern_offset(hModule, DetourGetModuleSize(hModule), "fc 33 cd e8 f6 65 14 00 8b e5 5d c3 ff 75 c4 8b 3d");
-		WCHEAT_assert(lpPlayer);
+		lpPlayer = (void *)LIB_pattern_offset(hModule, DetourGetModuleSize(hModule), "fc 33 cd e8 ?? ?? ?? ?? 8b e5 5d c3 ff 75 c4 8b 3d");
+		ALWAYS_ASSERT(lpPlayer);
 	}
 	return **(IAbstractPlayer ***)POINTER_OFFSET(lpPlayer, 17 /**The number of bytes in the pattern */);
 }
